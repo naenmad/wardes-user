@@ -41,6 +41,9 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import Script from 'next/script';
 import { useCart } from '../../contexts/CartContext';
+import { getMenuItems } from '../../lib/firebase/menuService';
+import { getActivePromotions, type Promotion } from '../../lib/firebase/promotionService';
+
 // Define Midtrans types di sini
 interface MidtransCallbacks {
     onSuccess: (result: any) => void;
@@ -1032,87 +1035,4 @@ export default function Checkout() {
             />
         </>
     );
-}
-
-// app/page.tsx - Import interface dan hapus definisi lokal:
-
-import { getMenuItems } from '../lib/firebase/menuService';
-import { getActivePromotions, type Promotion } from '../lib/firebase/promotionService'; // Import type
-
-// Hapus interface lokal:
-// interface Promotion {
-//     id: string;
-//     title: string;
-//     description?: string;
-//     discount?: number;
-//     imageUrl?: string;
-//     validFrom?: Date;
-//     validUntil?: Date;
-//     isActive?: boolean;
-//     createdAt?: Date;
-//     updatedAt?: Date;
-// }
-
-export default function Home() {
-    // ... rest of component menggunakan imported Promotion type
-}
-
-// app/page.tsx - Update komponen yang menggunakan promotions:
-
-{
-    promotions.length > 0 && (
-        <Box sx={{ px: 2, mb: 3 }}>
-            <Typography variant="h6" fontWeight="bold" gutterBottom sx={{ color: '#333' }}>
-                🎉 {t.promotions}
-            </Typography>
-            <Box sx={{ display: 'flex', gap: 2, overflowX: 'auto', pb: 1 }}>
-                {promotions.map((promo) => (
-                    <Box
-                        key={promo.id}
-                        sx={{
-                            minWidth: 280,
-                            borderRadius: 3,
-                            overflow: 'hidden',
-                            position: 'relative',
-                            cursor: 'pointer',
-                            '&:hover': { transform: 'scale(1.02)' },
-                            transition: 'transform 0.2s'
-                        }}
-                        onClick={() => router.push(`/promos/${promo.id}`)}
-                    >
-                        <Box sx={{ position: 'relative', height: 140 }}>
-                            <Image
-                                src={promo.imageUrl || '/images/placeholder-promo.jpg'} // Add fallback
-                                alt={promo.title || 'Promotion'} // Add fallback
-                                fill
-                                style={{ objectFit: 'cover' }}
-                            />
-                            <Box sx={{
-                                position: 'absolute',
-                                bottom: 0,
-                                left: 0,
-                                right: 0,
-                                background: 'linear-gradient(transparent, rgba(0,0,0,0.7))',
-                                p: 2
-                            }}>
-                                <Typography variant="subtitle1" fontWeight="bold" color="white">
-                                    {promo.title || 'Special Promotion'} {/* Add fallback */}
-                                </Typography>
-                                {promo.description && (
-                                    <Typography variant="caption" color="rgba(255,255,255,0.9)">
-                                        {promo.description}
-                                    </Typography>
-                                )}
-                                {promo.discount && (
-                                    <Typography variant="h6" fontWeight="bold" color="#FFD700">
-                                        {promo.discount}% OFF
-                                    </Typography>
-                                )}
-                            </Box>
-                        </Box>
-                    </Box>
-                ))}
-            </Box>
-        </Box>
-    )
 }

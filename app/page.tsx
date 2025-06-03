@@ -1,8 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react';
-import { getMenuItems } from '../lib/firebase/menuService';
-import { getActivePromotions } from '../lib/firebase/promotionService';
+import { getMenuItems } from './lib/firebase/menuService';
+import { getActivePromotions, type Promotion } from './lib/firebase/promotionService';
 import {
     Box,
     Typography,
@@ -46,20 +46,6 @@ import OnboardingFlow from '../src/components/onboardingflow/onBoardingFlow';
 import { useCart } from '../contexts/CartContext';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 
-export interface Promotion {
-    id: string;
-    title: string;
-    description: string;
-    image: string;
-    actionLink: string;
-    translations?: {
-        [key: string]: {
-            title: string;
-            description: string;
-        };
-    };
-}
-
 // Add this translation object near the top of your component
 const translations = {
     id: {
@@ -77,6 +63,7 @@ const translations = {
         breakfastPackage: "Paket Berbuka",
         tableNumberPrefix: "Nomor",
         noTableDetected: "Tidak ada meja terdeteksi",
+        promotions: "Promosi",
     },
     en: {
         searchPlaceholder: "Search your favorite dish",
@@ -93,6 +80,7 @@ const translations = {
         breakfastPackage: "Breakfast Package",
         tableNumberPrefix: "Number",
         noTableDetected: "No table detected",
+        promotions: "Promotions",
     }
 };
 
@@ -122,7 +110,7 @@ const CartButton = () => {
     );
 };
 
-export default function Home() {
+export default function Checkout() {
     const { cartItems, addToCart } = useCart();
 
     // Semua state declarations
