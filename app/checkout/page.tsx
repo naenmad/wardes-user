@@ -367,15 +367,16 @@ export default function Checkout() {
             orderSummary: "Ringkasan Pesanan",
             items: "Barang",
             subtotal: "Subtotal",
-            tax: "Pajak (11%)", // Updated to 11%
-            serviceFee: "Biaya layanan", // Added service fee
-            discount: "Diskon", // Added discount text
+            tax: "Pajak (11%)",
+            serviceFee: "Biaya layanan",
+            discount: "Diskon",
             total: "Total",
             personalInfo: "Informasi Pribadi",
             name: "Nama Lengkap",
             phone: "Nomor Telepon",
             address: "Alamat Pengiriman",
             notes: "Catatan Tambahan",
+            notesPlaceholder: "Masukkan catatan untuk pesanan Anda", // Tambahkan ini
             paymentMethod: "Metode Pembayaran",
             cash: "Tunai",
             creditCard: "Kartu Kredit",
@@ -415,16 +416,16 @@ export default function Checkout() {
             orderType: "Tipe Pesanan",
             dineIn: "Makan di Tempat",
             takeAway: "Bawa Pulang",
-            estimatedTime: "Estimasi waktu penyajian: 20-30 menit" // Added time estimation
+            estimatedTime: "Estimasi waktu penyajian: 20-30 menit"
         },
         en: {
             checkout: "Checkout",
             orderSummary: "Order Summary",
             items: "Items",
             subtotal: "Subtotal",
-            tax: "Tax (11%)", // Updated to 11%
-            serviceFee: "Service Fee", // Added service fee
-            discount: "Discount", // Added discount text
+            tax: "Tax (11%)",
+            serviceFee: "Service Fee",
+            discount: "Discount",
             total: "Total",
             personalInfo: "Personal Information",
             name: "Full Name",
@@ -434,7 +435,7 @@ export default function Checkout() {
             namePlaceholder: "Enter your full name",
             phonePlaceholder: "Enter your phone number",
             addressPlaceholder: "Enter your delivery address",
-            notesPlaceholder: "Additional notes for your order",
+            notesPlaceholder: "Additional notes for your order", // Tambahkan ini juga
             paymentMethod: "Payment Method",
             cash: "Cash",
             creditCard: "Credit Card",
@@ -474,7 +475,7 @@ export default function Checkout() {
             orderType: "Order Type",
             dineIn: "Dine-in",
             takeAway: "Take-away",
-            estimatedTime: "Estimated serving time: 20-30 minutes" // Added time estimation
+            estimatedTime: "Estimated serving time: 20-30 minutes"
         }
     };
 
