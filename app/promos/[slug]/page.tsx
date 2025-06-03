@@ -155,7 +155,7 @@ export default function PromoDetail() {
                             </Typography>
                             <Grid container spacing={2}>
                                 {promoItems.map((item) => (
-                                    <Grid item xs={6} sm={4} md={3} key={item.id}>
+                                    <Grid size={{ xs: 6, sm: 4, md: 3 }} key={item.id}>
                                         <Card sx={{ borderRadius: 3, height: '100%', display: 'flex', flexDirection: 'column' }}>
                                             <Box sx={{ position: 'relative', width: '100%', paddingTop: '75%' }}>
                                                 <Image

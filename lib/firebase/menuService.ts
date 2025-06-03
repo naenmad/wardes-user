@@ -24,6 +24,26 @@ export interface MenuItem {
     // tambahkan field lain jika ada
 }
 
+// Move the interface outside the function for reuse
+interface MenuItemData {
+    name?: string;
+    description?: string;
+    translations?: {
+        [key: string]: {
+            name?: string;
+            description?: string;
+        };
+    };
+    price?: number;
+    category?: string;
+    available?: boolean;
+    image?: string;
+    createdAt?: Timestamp;
+    updatedAt?: Timestamp;
+    rating?: number;
+    reviews?: number;
+    ingredients?: string[];
+}
 
 // Fungsi untuk mengambil semua item menu (mungkin sudah ada)
 export async function getMenuItems(category: string = 'semua', language: string = 'id'): Promise<MenuItem[]> {
@@ -41,29 +61,24 @@ export async function getMenuItems(category: string = 'semua', language: string 
     try {
         console.log(`Querying menu with category: ${category}, language: ${language}`);
         const snapshot = await getDocs(q);
-        console.log("Snapshot empty:", snapshot.empty);
-        console.log("Snapshot size:", snapshot.size);
 
-        if (snapshot.empty) {
-            console.log("No menu items found matching the query.");
-            return [];
-        }
-
+        // Then use it in your mapping:
         return snapshot.docs.map(doc => {
-            const data = doc.data();
-            console.log("Mapping document:", doc.id, data); // Log data per dokumen
+            const data = doc.data() as MenuItemData;
+            console.log("Mapping document:", doc.id, data);
             const currentTranslation = data.translations?.[language] || data.translations?.id || {};
+
             return {
                 id: doc.id,
-                name: currentTranslation.name || data.name,
-                description: currentTranslation.description || data.description,
-                price: data.price,
-                image: data.image,
-                category: data.category,
-                available: data.available,
+                name: currentTranslation.name || data.name || "Menu Item",
+                description: currentTranslation.description || data.description || "Menu description",
+                price: data.price || 0,
+                image: data.image || "",
+                category: data.category || "",
+                available: data.available !== undefined ? data.available : true,
                 createdAt: data.createdAt,
                 updatedAt: data.updatedAt,
-                translations: data.translations,
+                translations: data.translations || {},
                 rating: data.rating !== undefined ? data.rating : 0,
                 reviews: data.reviews !== undefined ? data.reviews : 0,
             } as MenuItem;
@@ -99,19 +114,21 @@ export async function getMenuItemsByIds(itemIds: string[], language: string = 'i
             const querySnapshot = await getDocs(q);
             querySnapshot.forEach((docSnap) => {
                 if (docSnap.exists()) {
-                    const data = docSnap.data();
+                    const data = docSnap.data() as MenuItemData; // Add type assertion
                     const currentTranslation = data.translations?.[language] || data.translations?.id || {};
                     fetchedItems.push({
                         id: docSnap.id,
-                        name: currentTranslation.name || data.name,
-                        description: currentTranslation.description || data.description,
-                        price: data.price,
-                        image: data.image,
-                        category: data.category,
-                        available: data.available,
+                        name: currentTranslation.name || data.name || "Menu Item",
+                        description: currentTranslation.description || data.description || "Menu description",
+                        price: data.price || 0,
+                        image: data.image || "",
+                        category: data.category || "",
+                        available: data.available !== undefined ? data.available : true,
                         createdAt: data.createdAt,
                         updatedAt: data.updatedAt,
-                        translations: data.translations,
+                        translations: data.translations || {},
+                        rating: data.rating !== undefined ? data.rating : 0,
+                        reviews: data.reviews !== undefined ? data.reviews : 0,
                     } as MenuItem);
                 }
             });
@@ -136,23 +153,21 @@ export async function getMenuItem(itemId: string, language: string = 'id'): Prom
         const docSnap = await getDoc(menuItemRef);
 
         if (docSnap.exists()) {
-            const data = docSnap.data();
-            // Pastikan mapping data sesuai dengan struktur MenuItem Anda
+            const data = docSnap.data() as MenuItemData; // Add type assertion
             const currentTranslation = data.translations?.[language] || data.translations?.id || {};
             return {
                 id: docSnap.id,
-                name: currentTranslation.name || data.name,
-                description: currentTranslation.description || data.description,
-                price: data.price,
-                image: data.image,
-                category: data.category,
+                name: currentTranslation.name || data.name || "Menu Item",
+                description: currentTranslation.description || data.description || "Menu description",
+                price: data.price || 0,
+                image: data.image || "",
+                category: data.category || "",
                 available: data.available !== undefined ? data.available : true,
                 createdAt: data.createdAt,
                 updatedAt: data.updatedAt,
-                translations: data.translations,
+                translations: data.translations || {},
                 rating: data.rating !== undefined ? data.rating : 0,
                 reviews: data.reviews !== undefined ? data.reviews : 0,
-                // tambahkan field lain dari MenuItem jika ada, seperti ingredients
                 ingredients: data.ingredients || [],
             } as MenuItem;
         } else {
@@ -169,17 +184,17 @@ export async function getMenuItem(itemId: string, language: string = 'id'): Prom
 export async function getMenuItemById(id: string): Promise<MenuItem | null> {
     try {
         const docRef = doc(db, 'menu', id);
-        const docSnap = await getDoc(docRef); // UBAH dari getDocs ke getDoc
+        const docSnap = await getDoc(docRef);
 
         if (docSnap.exists()) {
-            const data = docSnap.data();
+            const data = docSnap.data() as MenuItemData; // Add type assertion
             return {
                 id: docSnap.id,
-                name: data.name,
-                description: data.description,
-                price: data.price,
-                image: data.image,
-                category: data.category,
+                name: data.name || "Menu Item",
+                description: data.description || "Menu description",
+                price: data.price || 0,
+                image: data.image || "",
+                category: data.category || "",
                 available: data.available !== undefined ? data.available : true,
                 createdAt: data.createdAt,
                 updatedAt: data.updatedAt,

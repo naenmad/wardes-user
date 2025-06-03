@@ -1,8 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react';
-import { getMenuItems } from './lib/firebase/menuService';
-import { getActivePromotions, type Promotion } from './lib/firebase/promotionService';
+import { getMenuItems } from '../lib/firebase/menuService';
+import { getActivePromotions, type Promotion } from '../lib/firebase/promotionService';
 import {
     Box,
     Typography,

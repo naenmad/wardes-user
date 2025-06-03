@@ -11,26 +11,14 @@ import {
     Button,
     IconButton,
     Stack,
-    Skeleton
+    Skeleton,
+    Grid // Import Grid from @mui/material
 } from '@mui/material';
-import Grid from '@mui/material/Grid'; // Import Grid secara default!
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { useRouter } from 'next/navigation';
-import { getActivePromotions } from '../../lib/firebase/promotionService';
+import { getActivePromotions, Promotion } from '../../lib/firebase/promotionService';
 import { addDoc, collection } from 'firebase/firestore';
 import { db } from '../../lib/firebase/config';
-
-export interface Promotion {
-    id: string;
-    title: string;
-    description: string;
-    image: string;
-    actionLink: string;
-    // Kemungkinan ada field lain seperti:
-    // isActive: boolean;
-    // startDate: string/timestamp;
-    // endDate: string/timestamp;
-}
 
 // Helper function untuk aman mengakses localStorage
 const getInitialLanguage = () => {
@@ -142,71 +130,68 @@ export default function Promotions() {
                 </Typography>
 
                 {loading ? (
-                    // Loading skeletons
-                    <Grid container spacing={2}>
+                    // Loading skeletons - Use Stack instead of Grid
+                    <Stack spacing={2}>
                         {[1, 2, 3].map((item) => (
-                            <Grid component="div" item xs={12} key={item}>
-                                <Card sx={{ borderRadius: 3, overflow: 'hidden' }}>
-                                    <Skeleton variant="rectangular" height={180} />
-                                    <CardContent>
-                                        <Skeleton variant="text" width="80%" height={32} />
-                                        <Skeleton variant="text" width="90%" />
-                                        <Box sx={{ mt: 2 }}>
-                                            <Skeleton variant="rectangular" width={120} height={36} sx={{ borderRadius: 5 }} />
-                                        </Box>
-                                    </CardContent>
-                                </Card>
-                            </Grid>
+                            <Card key={item} sx={{ borderRadius: 3, overflow: 'hidden' }}>
+                                <Skeleton variant="rectangular" height={180} />
+                                <CardContent>
+                                    <Skeleton variant="text" width="80%" height={32} />
+                                    <Skeleton variant="text" width="90%" />
+                                    <Box sx={{ mt: 2 }}>
+                                        <Skeleton variant="rectangular" width={120} height={36} sx={{ borderRadius: 5 }} />
+                                    </Box>
+                                </CardContent>
+                            </Card>
                         ))}
-                    </Grid>
+                    </Stack>
                 ) : promotions.length > 0 ? (
-                    <Grid container spacing={2}>
+                    <Stack spacing={2}>
                         {promotions.map((promo) => (
-                            <Grid component="div" item xs={12} key={promo.id}>
-                                <Card
-                                    sx={{
-                                        borderRadius: 3,
-                                        overflow: 'hidden',
-                                        cursor: 'pointer',
-                                        '&:hover': { boxShadow: 3 }
-                                    }}
-                                    onClick={() => handlePromoClick(promo.actionLink)}
-                                >
-                                    <CardMedia
-                                        component="img"
-                                        height="180"
-                                        image={promo.image}
-                                        alt={promo.title}
-                                    />
-                                    <CardContent>
-                                        <Typography variant="h6" component="h2" fontWeight="bold">
-                                            {promo.title}
-                                        </Typography>
-                                        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                                            {promo.description}
-                                        </Typography>
-                                        <Button
-                                            variant="contained"
-                                            size="small"
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                handlePromoClick(promo.actionLink);
-                                            }}
-                                            sx={{
-                                                borderRadius: 5,
-                                                bgcolor: '#bc5a3c',
-                                                '&:hover': {
-                                                    bgcolor: '#a04e34',
-                                                },
-                                            }}
-                                        >
-                                            {language === 'id' ? 'Lihat Menu' : 'View Menu'}
-                                        </Button>
-                                    </CardContent>
-                                </Card>
-                            </Grid>
+                            <Card
+                                key={promo.id}
+                                sx={{
+                                    borderRadius: 3,
+                                    overflow: 'hidden',
+                                    cursor: 'pointer',
+                                    '&:hover': { boxShadow: 3 }
+                                }}
+                                onClick={() => handlePromoClick(promo.actionLink)}
+                            >
+                                <CardMedia
+                                    component="img"
+                                    height="180"
+                                    image={promo.image}
+                                    alt={promo.title}
+                                />
+                                <CardContent>
+                                    <Typography variant="h6" component="h2" fontWeight="bold">
+                                        {promo.title}
+                                    </Typography>
+                                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                                        {promo.description}
+                                    </Typography>
+                                    <Button
+                                        variant="contained"
+                                        size="small"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handlePromoClick(promo.actionLink);
+                                        }}
+                                        sx={{
+                                            borderRadius: 5,
+                                            bgcolor: '#bc5a3c',
+                                            '&:hover': {
+                                                bgcolor: '#a04e34',
+                                            },
+                                        }}
+                                    >
+                                        {language === 'id' ? 'Lihat Menu' : 'View Menu'}
+                                    </Button>
+                                </CardContent>
+                            </Card>
                         ))}
-                    </Grid>
+                    </Stack>
                 ) : (
                     <Box sx={{ textAlign: 'center', py: 8 }}>
                         <Typography variant="body1" color="text.secondary">
