@@ -60,18 +60,33 @@ export default function Cart() {
     // Fungsi untuk menangani pengurangan kuantitas atau penghapusan item
     const handleDecreaseQuantity = (item: CartItemDetail) => {
         if (item.quantity > 1) {
-            updateQuantity(item.id, item.quantity - 1, { spicyLevel: item.spicyLevel, iceLevel: item.iceLevel });
+            updateQuantity(item.id, item.quantity - 1, {
+                spicyLevel: item.spicyLevel,
+                iceLevel: item.iceLevel
+            });
         } else {
             // Jika kuantitas 1, hapus item
-            removeFromCart(item.id, { spicyLevel: item.spicyLevel, iceLevel: item.iceLevel });
+            removeFromCart(item.id, {
+                spicyLevel: item.spicyLevel,
+                iceLevel: item.iceLevel
+            });
         }
     };
 
     // Fungsi untuk menangani penambahan kuantitas
     const handleIncreaseQuantity = (item: CartItemDetail) => {
-        updateQuantity(item.id, item.quantity + 1, { spicyLevel: item.spicyLevel, iceLevel: item.iceLevel });
+        updateQuantity(item.id, item.quantity + 1, {
+            spicyLevel: item.spicyLevel,
+            iceLevel: item.iceLevel
+        });
     };
 
+    const handleRemoveItem = (item: CartItemDetail) => {
+        removeFromCart(item.id, {
+            spicyLevel: item.spicyLevel,
+            iceLevel: item.iceLevel
+        });
+    };
 
     return (
         <Box sx={{ bgcolor: 'background.paper', minHeight: '100vh', pb: 8 }}>

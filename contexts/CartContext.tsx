@@ -16,8 +16,8 @@ export interface CartItem {
 interface CartContextType {
     cartItems: CartItem[];
     addToCart: (itemOrId: CartItem | string, itemData?: Partial<CartItem>) => Promise<void>;
-    removeFromCart: (id: string) => void;
-    updateQuantity: (id: string, quantity: number) => void;
+    removeFromCart: (id: string, options?: { spicyLevel?: string; iceLevel?: string }) => void;
+    updateQuantity: (id: string, quantity: number, options?: { spicyLevel?: string; iceLevel?: string }) => void;
     clearCart: () => void;
     getCartTotal: () => number;
     isLoading: boolean;

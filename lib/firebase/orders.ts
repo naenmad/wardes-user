@@ -371,104 +371,46 @@ export interface CustomerInfo {
 
 export async function createOrder(
     orderId: string,
-    items: OrderItem[], // Array item yang diterima dari API route
-    customer: CustomerInfo,
+    items: any[],
+    customerDetails: any,
     notes: string,
     paymentMethod: string,
-    paymentToken?: string | null,
-    grandTotal?: number,
-    languageUsedParam?: string | null // Tambahkan parameter ini jika Anda menggunakannya di API
-) {
-    // Validasi input dasar
-    if (!orderId || !items || !Array.isArray(items) || items.length === 0 || !customer || !paymentMethod) {
-        console.error("Missing or invalid required fields for createOrder:", {
-            orderId,
-            itemsCount: items ? items.length : 'undefined/not_array',
-            customerExists: !!customer,
-            paymentMethod
-        });
-        throw new Error("Missing or invalid required fields to create order (orderId, items array, customer, paymentMethod).");
-    }
-
-    const orderRef = doc(db, 'orders', orderId);
-
-    // Validasi dan proses ulang items untuk memastikan semua field numerik adalah angka
-    // dan subtotal per item dihitung dengan benar di sini.
-    let calculatedSubtotalFromItems = 0;
-    const validatedItemsForFirestore = items.map(itemInput => {
-        const price = typeof itemInput.price === 'number' && !isNaN(itemInput.price) ? itemInput.price : 0;
-        const quantity = typeof itemInput.quantity === 'number' && !isNaN(itemInput.quantity) ? itemInput.quantity : 0;
-        const itemSubtotal = price * quantity; // Hitung ulang subtotal di sini untuk kepastian
-
-        calculatedSubtotalFromItems += itemSubtotal; // Akumulasi subtotal keseluruhan
-
-        return {
-            menuItemId: String(itemInput.menuItemId || 'UNKNOWN_ITEM_ID'),
-            name: String(itemInput.name || 'Unknown Item'),
-            price: price,
-            quantity: quantity,
-            subtotal: itemSubtotal, // Gunakan subtotal yang baru dihitung
-            spicyLevel: itemInput.spicyLevel || null,
-            iceLevel: itemInput.iceLevel || null,
-        };
-    });
-
-    // Pastikan calculatedSubtotalFromItems adalah angka yang valid
-    if (isNaN(calculatedSubtotalFromItems)) {
-        console.error("calculatedSubtotalFromItems is NaN. Check item prices and quantities.", items);
-        calculatedSubtotalFromItems = 0; // Fallback
-    }
-
-    const tax = Math.round(calculatedSubtotalFromItems * 0.11);
-    const serviceFee = 2000; // Pastikan ini angka
-
-    // Pastikan grandTotal yang diterima (jika ada) atau yang dihitung adalah angka
-    let finalGrandTotal: number;
-    if (typeof grandTotal === 'number' && !isNaN(grandTotal)) {
-        finalGrandTotal = grandTotal;
-    } else {
-        finalGrandTotal = calculatedSubtotalFromItems + tax + serviceFee;
-    }
-    if (isNaN(finalGrandTotal)) {
-        console.error("finalGrandTotal is NaN. Check calculations.", { calculatedSubtotalFromItems, tax, serviceFee, grandTotalParam: grandTotal });
-        finalGrandTotal = 0; // Fallback
-    }
-
-
-    const orderData = {
-        items: validatedItemsForFirestore,
-        customerDetails: {
-            name: customer.name || null,
-            phone: customer.phone || null,
-            address: customer.address || null,
-            tableNumber: customer.tableNumber || null,
-        },
-        notes: notes || '',
-        paymentMethod: paymentMethod,
-        paymentToken: paymentToken || null,
-        status: paymentMethod === 'cash' ? 'confirmed' : 'pending_payment',
-        createdAt: Timestamp.now(),
-        updatedAt: Timestamp.now(),
-        subtotal: calculatedSubtotalFromItems, // Gunakan subtotal yang dihitung dari item yang divalidasi
-        tax: tax,
-        serviceFee: serviceFee,
-        grandTotal: finalGrandTotal, // Gunakan grand total yang sudah divalidasi
-        languageUsed: languageUsedParam || 'id',
-        userId: null, // Placeholder, sesuaikan jika Anda memiliki sistem pengguna
-        // Pastikan tidak ada field lain yang bisa menjadi undefined
-    };
-
-    console.log(`Attempting to save order ${orderId} with data (createOrder v2):`, JSON.stringify(orderData, null, 2));
-
+    paymentToken: string | null,
+    grandTotal: number,
+    languageUsed: string,
+    status?: string
+): Promise<string> {
     try {
-        await setDoc(orderRef, orderData);
-        console.log(`Order ${orderId} created successfully.`);
+        const finalStatus = status || 'pending'; // Ubah default dari 'pending_payment' ke 'pending'
+
+        console.log(`Creating order ${orderId} with:`, {
+            paymentMethod,
+            paymentToken: paymentToken ? 'exists' : 'null',
+            status: finalStatus
+        });
+
+        const orderData = {
+            items: items,
+            customerDetails: customerDetails,
+            notes: notes || '',
+            paymentMethod: paymentMethod,
+            paymentToken: paymentToken,
+            status: finalStatus, // Semua order dimulai dengan status 'pending'
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp(),
+            subtotal: items.reduce((sum, item) => sum + (item.price * item.quantity), 0),
+            tax: Math.round(items.reduce((sum, item) => sum + (item.price * item.quantity), 0) * 0.11),
+            serviceFee: 2000,
+            grandTotal: grandTotal,
+            languageUsed: languageUsed || 'id',
+            userId: null,
+        };
+
+        await setDoc(doc(db, 'orders', orderId), orderData);
+        console.log(`Order ${orderId} created successfully with status: ${finalStatus}`);
         return orderId;
-    } catch (error: any) {
-        console.error(`Error creating order ${orderId} in Firestore:`, error);
-        if (error.message && error.message.includes("invalid data")) {
-            console.error("Data that caused Firestore error (createOrder v2):", JSON.stringify(orderData, null, 2));
-        }
+    } catch (error) {
+        console.error('Error creating order:', error);
         throw error;
     }
 }

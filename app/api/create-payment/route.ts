@@ -87,7 +87,8 @@ export async function POST(request: Request) {
                     paymentMethod,
                     null, // paymentToken untuk cash
                     backendCalculatedGrossAmount, // grandTotal
-                    languageFromFrontend || 'id'
+                    languageFromFrontend || 'id',
+                    'pending' // Ubah dari 'confirmed' ke 'pending' untuk cash payment
                 );
                 console.log("Cash order saved to Firestore successfully for orderId:", orderId);
                 return NextResponse.json({
@@ -149,6 +150,7 @@ export async function POST(request: Request) {
         const transaction = await snap.createTransaction(transactionParams);
         console.log("Midtrans transaction response:", transaction);
 
+        // PERBAIKAN: Set status ke pending_payment untuk non-cash payments
         await createOrder(
             orderId,
             itemsForFirestore,
@@ -157,7 +159,8 @@ export async function POST(request: Request) {
             paymentMethod,
             transaction.token,
             backendCalculatedGrossAmount, // grandTotal
-            languageFromFrontend || 'id'
+            languageFromFrontend || 'id',
+            'pending' // Status pending untuk non-cash payment
         );
         console.log(`Order ${orderId} with Midtrans token saved to Firestore.`);
 

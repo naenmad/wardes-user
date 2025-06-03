@@ -10,15 +10,25 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Order ID and status required' }, { status: 400 });
         }
 
+        console.log(`Updating order ${orderId} status to: ${status}`);
+
         const orderRef = doc(db, 'orders', orderId);
         await updateDoc(orderRef, {
             status: status,
             updatedAt: serverTimestamp()
         });
 
-        return NextResponse.json({ success: true });
+        console.log(`Order ${orderId} status successfully updated to: ${status}`);
+
+        return NextResponse.json({
+            success: true,
+            orderId: orderId,
+            newStatus: status
+        });
     } catch (error: any) {
         console.error('Error updating order status:', error);
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        return NextResponse.json({
+            error: error.message || 'Failed to update order status'
+        }, { status: 500 });
     }
 }

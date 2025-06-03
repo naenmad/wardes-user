@@ -229,10 +229,12 @@ export default function Checkout() {
                 // Store the order ID for reference
                 setOrderId(data.orderId);
 
-                // For cash payments, we're done - mark order as complete
+                // Untuk semua payment method, langsung set orderPlaced = true
+                // Karena admin yang akan handle konfirmasi
                 if (form.paymentMethod === 'cash') {
                     setOrderPlaced(true);
                     clearCart();
+                    console.log('Cash order placed successfully with pending status');
                 }
                 // For non-cash payments, handle Midtrans
                 else if (data.token) {
@@ -241,43 +243,21 @@ export default function Checkout() {
                     // If Midtrans is loaded, open the payment window
                     if (midtransLoaded && window.snap) {
                         window.snap.pay(data.token, {
-                            // Konfigurasi untuk memastikan popup mode
-                            skipOrderSummary: false,
-
                             onSuccess: function (result: any) {
                                 console.log('Payment success:', result);
+
+                                // Untuk non-cash yang berhasil, tetap pending
+                                // Admin yang akan konfirmasi manual
                                 setOrderPlaced(true);
                                 clearCart();
 
-                                // Update status di background
-                                setTimeout(() => {
-                                    updateOrderStatus(data.orderId, 'confirmed');
-                                }, 1000);
+                                console.log('Non-cash payment completed, order status remains pending for admin confirmation');
                             },
                             onPending: function (result: any) {
                                 console.log('Payment pending:', result);
                                 setSnackbarSeverity('info');
                                 setSnackbarMessage('Payment is being processed...');
                                 setOpenSnackbar(true);
-
-                                // Check status secara berkala untuk pending payment
-                                const checkInterval = setInterval(async () => {
-                                    try {
-                                        const statusData = await checkPaymentStatus(data.orderId);
-                                        if (statusData && statusData.status === 'confirmed') {
-                                            setOrderPlaced(true);
-                                            clearCart();
-                                            clearInterval(checkInterval);
-                                        }
-                                    } catch (error) {
-                                        console.error('Error checking status:', error);
-                                    }
-                                }, 5000);
-
-                                // Stop checking after 5 minutes
-                                setTimeout(() => {
-                                    clearInterval(checkInterval);
-                                }, 300000);
                             },
                             onError: function (result: any) {
                                 console.log('Payment error:', result);
@@ -285,6 +265,7 @@ export default function Checkout() {
                                 setSnackbarMessage('Payment failed. Please try again.');
                                 setOpenSnackbar(true);
 
+                                // Update status to cancelled untuk payment yang gagal
                                 updateOrderStatus(data.orderId, 'cancelled');
                             },
                             onClose: function () {
@@ -295,16 +276,15 @@ export default function Checkout() {
                             }
                         });
                     } else {
-                        // Fallback jika Snap tidak load - redirect manual
+                        // Fallback jika Snap tidak load
                         if (data.redirectUrl) {
-                            // Buka di tab yang sama, bukan tab baru
                             window.location.href = data.redirectUrl;
                         } else {
                             throw new Error('Payment gateway not available');
                         }
                     }
                 } else {
-                    throw new Error('Invalid payment response - no token received');
+                    throw new Error('Invalid payment response');
                 }
             } else {
                 throw new Error(data.message || 'Payment failed');
