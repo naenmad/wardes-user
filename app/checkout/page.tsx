@@ -41,6 +41,23 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import Script from 'next/script';
 import { useCart } from '../../contexts/CartContext';
+// Define Midtrans types di sini
+interface MidtransCallbacks {
+    onSuccess: (result: any) => void;
+    onPending: (result: any) => void;
+    onError: (result: any) => void;
+    onClose: () => void;
+}
+
+interface MidtransSnap {
+    pay: (token: string, options: MidtransCallbacks) => void;
+}
+
+declare global {
+    interface Window {
+        snap?: MidtransSnap;
+    }
+}
 
 // Define cart item interface
 interface CartItem {
@@ -54,15 +71,6 @@ interface CartItem {
     specialInstructions?: string; // Add this property
 }
 
-// Add this at the top of your file
-declare global {
-    interface Window {
-        snap?: {
-            pay: (token: string, options: any) => void;
-        }
-    }
-}
-
 // Define checkout form interface - simplified
 interface CheckoutForm {
     name: string; // Keep these for API compatibility
@@ -74,12 +82,12 @@ interface CheckoutForm {
 
 export default function Checkout() {
     const router = useRouter();
-    const { cartItems, isLoading, clearCart } = useCart(); // Tambahkan clearCart di sini
+    const { cartItems, isLoading, clearCart } = useCart();
     const [submitting, setSubmitting] = useState(false);
     const [language, setLanguage] = useState('id');
     const [openSnackbar, setOpenSnackbar] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState('');
-    const [snackbarSeverity, setSnackbarSeverity] = useState<'success' | 'error'>('success');
+    const [snackbarSeverity, setSnackbarSeverity] = useState<'success' | 'error' | 'info' | 'warning'>('success'); // Update type
     const [openDialog, setOpenDialog] = useState(false);
     const [orderPlaced, setOrderPlaced] = useState(false);
     const [orderId, setOrderId] = useState('');
@@ -242,15 +250,11 @@ export default function Checkout() {
 
                     // If Midtrans is loaded, open the payment window
                     if (midtransLoaded && window.snap) {
-                        window.snap.pay(data.token, {
+                        const callbacks: MidtransCallbacks = {
                             onSuccess: function (result: any) {
                                 console.log('Payment success:', result);
-
-                                // Untuk non-cash yang berhasil, tetap pending
-                                // Admin yang akan konfirmasi manual
                                 setOrderPlaced(true);
                                 clearCart();
-
                                 console.log('Non-cash payment completed, order status remains pending for admin confirmation');
                             },
                             onPending: function (result: any) {
@@ -264,8 +268,6 @@ export default function Checkout() {
                                 setSnackbarSeverity('error');
                                 setSnackbarMessage('Payment failed. Please try again.');
                                 setOpenSnackbar(true);
-
-                                // Update status to cancelled untuk payment yang gagal
                                 updateOrderStatus(data.orderId, 'cancelled');
                             },
                             onClose: function () {
@@ -274,7 +276,9 @@ export default function Checkout() {
                                 setSnackbarMessage('Payment was cancelled.');
                                 setOpenSnackbar(true);
                             }
-                        });
+                        };
+
+                        window.snap.pay(data.token, callbacks);
                     } else {
                         // Fallback jika Snap tidak load
                         if (data.redirectUrl) {
